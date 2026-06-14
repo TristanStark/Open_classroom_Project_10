@@ -56,7 +56,12 @@ def showSummary():
         flash("Sorry, that email wasn't found.")
         return render_template('index.html')
 
-    return render_template('welcome.html',club=club,competitions=competitions)
+    return render_template(
+        'welcome.html',
+        club=club,
+        competitions=competitions,
+        clubs=clubs
+    )
 
 @app.route('/book/<competition>/<club>')
 def book(competition,club):
@@ -67,7 +72,12 @@ def book(competition,club):
         return render_template('booking.html',club=foundClub,competition=foundCompetition,max_places=maxPlaces)
     else:
         flash("Something went wrong-please try again")
-        return render_template('welcome.html', club=club, competitions=competitions)
+        return render_template(
+            'welcome.html',
+            club=club,
+            competitions=competitions,
+            clubs=clubs
+        )
 
 
 @app.route('/purchasePlaces',methods=['POST'])
@@ -104,10 +114,12 @@ def purchasePlaces():
 
     redeemPlaces(club, competition, placesRequired)
     flash('Great-booking complete!')
-    return render_template('welcome.html', club=club, competitions=competitions)
-
-
-# TODO: Add route for points display
+    return render_template(
+        'welcome.html',
+        club=club,
+        competitions=competitions,
+        clubs=clubs
+    )
 
 
 @app.route('/logout')
