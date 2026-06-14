@@ -28,6 +28,14 @@ def loadCompetitions():
          listOfCompetitions = json.load(comps)['competitions']
          return listOfCompetitions
 
+def redeemPlaces(club, competition, placesRequired):
+    """Deduct booked places from both the competition and the club balance."""
+    availablePoints = int(club['points'])
+    availablePlaces = int(competition['numberOfPlaces'])
+
+    competition['numberOfPlaces'] = availablePlaces - placesRequired
+    club['points'] = availablePoints - placesRequired
+
 
 app = Flask(__name__)
 app.secret_key = 'something_special'
@@ -94,8 +102,7 @@ def purchasePlaces():
             max_places=getMaxBookablePlaces(club, competition)
         )
 
-    competition['numberOfPlaces'] = availablePlaces - placesRequired
-    club['points'] = availablePoints - placesRequired
+    redeemPlaces(club, competition, placesRequired)
     flash('Great-booking complete!')
     return render_template('welcome.html', club=club, competitions=competitions)
 
