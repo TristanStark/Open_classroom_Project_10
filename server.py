@@ -2,11 +2,20 @@ import json
 from flask import Flask,render_template,request,redirect,flash,url_for
 
 
+MAX_PLACES_PER_BOOKING = 12
+
 def loadClubs():
     with open('clubs.json') as c:
          listOfClubs = json.load(c)['clubs']
          return listOfClubs
 
+
+def getMaxBookablePlaces(club, competition):
+    return min(
+        int(club['points']),
+        int(competition['numberOfPlaces']),
+        MAX_PLACES_PER_BOOKING
+    )
 
 def loadCompetitions():
     with open('competitions.json') as comps:
@@ -40,9 +49,7 @@ def book(competition,club):
     foundClub = [c for c in clubs if c['name'] == club][0]
     foundCompetition = [c for c in competitions if c['name'] == competition][0]
     if foundClub and foundCompetition:
-        availablePoints = int(foundClub['points'])
-        availablePlaces = int(foundCompetition['numberOfPlaces'])
-        maxPlaces = min(availablePoints, availablePlaces)
+        maxPlaces = getMaxBookablePlaces(foundClub, foundCompetition)
         return render_template('booking.html',club=foundClub,competition=foundCompetition,max_places=maxPlaces)
     else:
         flash("Something went wrong-please try again")
@@ -63,6 +70,15 @@ def purchasePlaces():
             competition=competition,
             max_places=min(availablePoints, int(competition['numberOfPlaces']))
         )
+    if placesRequired > MAX_PLACES_PER_BOOKING:
+        flash('You cannot book more than 12 places for one competition.')
+        return render_template(
+            'booking.html',
+            club=club,
+            competition=competition,
+            max_places=getMaxBookablePlaces(club, competition)
+        )
+
     competition['numberOfPlaces'] = int(competition['numberOfPlaces']) - placesRequired
     club['points'] = int(club['points']) - placesRequired
     flash('Great-booking complete!')
